@@ -3,12 +3,12 @@
 // console.log('my fav way to start');
 // var transition = require('../d3-transition');
 
-var transition = d3.transition();
+// var transition = d3.transition();
 
 
 var gameOptions = {
-  height: '96%',
-  width: '96%',
+  height: '450',
+  width: '700',
   nEnemies: 5,
   padding: 20
 };
@@ -41,45 +41,46 @@ var createEnemies = () => {
 
 
 
-var tweenWithoutCollisionDetection = (endData) => {
-  // var enemy = d3.select(this);
-  console.log(this);
-  // console.log(context);
-  // console.log(enemy);
-  console.log(endData);
-  // console.log(other);
-  console.log('from in tweenWithoutCollisionDetection');
-  debugger;
+// var tweenWithoutCollisionDetection = (endData) => {
+//   // var enemy = d3.select(this);
+//   console.log(this);
+//   // console.log(context);
+//   // console.log(enemy);
+//   console.log(endData);
+//   // console.log(other);
+//   console.log('from in tweenWithoutCollisionDetection');
+//   // debugger;
 
 
-  var startPos = {
-    x: parseFloat(enemy.attr('x')),
-    y: parseFloat(enemy.attr('y'))
-  };
+//   var startPos = {
+//     x: parseFloat(enemy.attr('x')),
+//     y: parseFloat(enemy.attr('y'))
+//   };
 
-  var endPos = {
-    x: axes.x(endData.x),
-    y: axes.y(endData.y)
-  };
+//   var endPos = {
+//     x: axes.x(endData.x),
+//     y: axes.y(endData.y)
+//   };
 
-  return (t) => {
-    var enemyNextPos = {
-      x: startPos.x + (endPos.x - startPos.x) * t,
-      y: startPos.y + (endPos.y - startPos.y) * t
-    };
+//   return (t) => {
+//     var enemyNextPos = {
+//       x: startPos.x + (endPos.x - startPos.x) * t,
+//       y: startPos.y + (endPos.y - startPos.y) * t
+//     };
 
-    enemy.attr('x', enemyNextPos.x)
-      .attr('y', enemyNextPos.y);
-  };
-};
+//     enemy.attr('x', enemyNextPos.x)
+//       .attr('y', enemyNextPos.y);
+//   };
+// };
 
 
 
 
 var render = enemyData => {
-  debugger;
+  // debugger;
   var enemies = gameBoard.selectAll('.enemy')
     .data(enemyData, d => d.id);
+
   enemies.enter()
     .append('svg:image')
       .attr('class', 'enemy')
@@ -87,34 +88,46 @@ var render = enemyData => {
       .attr('x', enemy => axes.x(enemy.x))
       .attr('y', enemy => axes.y(enemy.y));
 
-  // enemies.update()
-  //   .
 
   enemies.exit()
     .remove();
-  // console.log(enemies)
-  // console.log('enemies.transition', enemies.transition());
-  // gameBoard.selectAll('.enemy').transition()
-    // .duration(500)
-    // .attr('href', 'grinning-face.png')
-    // .attr('x', '50px')
-  console.log(enemies.transition());
+
+  // console.log(enemies.transition());
   enemies.transition()
+    // todo, make this happen as a named external function
     // .tween('custom', tweenWithoutCollisionDetection.bind(this));
     .tween('custom', function(endData) {
-      console.log('endData', endData);
-      console.log('node', node);
 
-      var node = this;
-      return function(t) {
-        node.setAttribute('x', axes.x(endData.x));
-        node.setAttribute('y', axes.y(endData.y));
+      var d3node = d3.select(this);
+
+      var startPos = {
+        x: parseFloat(d3node.attr('x')),
+        y: parseFloat(d3node.attr('y'))
       };
 
-      // tweenWithoutCollisionDetection.call(context);
-    //   console.log('anythihng');
+      var endPos = {
+        x: parseFloat(axes.x(endData.x)),
+        y: parseFloat(axes.y(endData.y))
+      };
+
+      return function(t) {
+
+        var enemyNextPos = {
+          x: startPos.x + (endPos.x - startPos.x) * t,
+          y: startPos.y + (endPos.y - startPos.y) * t
+        };
+
+        d3node.attr('x', enemyNextPos.x)
+         .attr('y', enemyNextPos.y);
+      };
     });
 };
+
+
+// INIT
+//
+//
+//
 
 var gameTurn = () => {
   var newEnemyPositions = createEnemies();
@@ -123,7 +136,7 @@ var gameTurn = () => {
 
 var play = () => {
   gameTurn();
-  setInterval(gameTurn, 2000);
+  setInterval(gameTurn, 1000);
 };
 
 play();
