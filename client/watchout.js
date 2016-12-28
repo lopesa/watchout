@@ -7,8 +7,8 @@
 
 
 var gameOptions = {
-  height: '450',
-  width: '700',
+  height: 450,
+  width: 700,
   nEnemies: 5,
   padding: 20
 };
@@ -21,6 +21,115 @@ var axes = {
 var gameBoard = d3.select('.board').append('svg:svg')
   .attr('width', gameOptions.width)
   .attr('height', gameOptions.height);
+
+
+
+var Player = () => {
+  // debugger;
+
+  var instance = {};
+
+  var path = 'm-7.5,1.62413c0,-5.04095 4.08318,-9.12413 9.12414,-9.12413c5.04096,0 9.70345,5.53145 11.87586,9.12413c-2.02759,2.72372 -6.8349,9.12415 -11.87586,9.12415c-5.04096,0 -9.12414,-4.08318 -9.12414,-9.12415z';
+
+  var fill = '#ff6600';
+  var x = 0;
+  var y = 0;
+  var angle = 0;
+  var r = 5;
+  var el;
+
+  instance.render = to => {
+    el = to.append('svg:path')
+      .attr('d', path)
+      .attr('fill', fill);
+
+    instance.transform({
+      x: gameOptions.width * 0.5,
+      y: gameOptions.height * 0.5
+    });
+
+    instance.setUpDragging();
+  };
+
+  instance.getX = () => x;
+  instance.getY = () => y;
+
+  instance.setX = newX => {
+    var minX = gameOptions.padding;
+    var maxX = gameOptions.width - gameOptions.padding;
+
+    if (newX <= minX) {
+      newX = minX;
+    }
+    if (newX >= maxX) {
+      newX = maxX;
+    }
+
+    x = newX;
+  };
+
+  instance.setY = newY => {
+    var minY = gameOptions.padding;
+    var maxY = gameOptions.height - gameOptions.padding;
+
+    if (newY <= minY) {
+      newY = minY;
+    }
+    if (newY >= maxY) {
+      newY = maxY;
+    }
+
+    y = newY;
+  };
+
+
+  instance.transform = opts => {
+    console.log('el', el);
+    instance.setX(opts.x || x);
+    instance.setY(opts.y || y);
+
+    // todo: use backticks to do this.
+    el.attr('transform', 'translate(' + instance.getX() + ',' + instance.getY() + ')');
+    // el.attr('transform', `translate({instance.getX()},{instance.getY()})`);
+  };
+
+  instance.moveRelative = (dx, dy) => {
+    instance.transform({
+      x: instance.getX() + dx,
+      y: instance.getY() + dy
+    });
+  };
+
+  instance.setUpDragging = () => {
+    var dragMove = () => {
+      instance.moveRelative(d3.event.dx, d3.event.dy);
+    };
+
+    var drag = d3.behavior.drag()
+      .on('drag', dragMove);
+
+    el.call(drag);
+  };
+
+
+
+  return instance;
+};
+
+var players = [];
+var player = Player();
+// var player2 = Player();
+
+players.push(player.render(gameBoard));
+// players.push(player2.render(gameBoard));
+
+
+
+
+
+
+
+
 
 
 var createEnemies = () => {
