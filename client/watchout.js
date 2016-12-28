@@ -9,7 +9,7 @@
 var gameOptions = {
   height: 450,
   width: 700,
-  nEnemies: 5,
+  nEnemies: 20,
   padding: 20
 };
 
@@ -22,6 +22,10 @@ var gameBoard = d3.select('.board').append('svg:svg')
   .attr('width', gameOptions.width)
   .attr('height', gameOptions.height);
 
+
+////////////////////////
+//    THE PLAYER
+////////////////////////
 
 
 var Player = () => {
@@ -53,6 +57,7 @@ var Player = () => {
 
   instance.getX = () => x;
   instance.getY = () => y;
+  instance.getR = () => r;
 
   instance.setX = newX => {
     var minX = gameOptions.padding;
@@ -84,7 +89,7 @@ var Player = () => {
 
 
   instance.transform = opts => {
-    console.log('el', el);
+    // console.log('el', el);
     instance.setX(opts.x || x);
     instance.setY(opts.y || y);
 
@@ -116,20 +121,37 @@ var Player = () => {
   return instance;
 };
 
-var players = [];
+// var players = [];
 var player = Player();
-// var player2 = Player();
+player.render(gameBoard);
 
-players.push(player.render(gameBoard));
-// players.push(player2.render(gameBoard));
+// players.push(player.render(gameBoard));
 
-
-
-
-
+////////////////////////
+//    END PLAYER
+////////////////////////
 
 
+var checkCollision = (enemy, collidedCallback) => {
+  // console.log('ever here');
 
+  var radiusSum = parseFloat(enemy.attr('r')) + player.getR();
+  var xDiff = parseFloat(enemy.attr('x')) - player.getX();
+  var yDiff = parseFloat(enemy.attr('y')) - player.getY();
+
+  var separation = Math.sqrt( Math.pow(xDiff, 2) + Math.pow(yDiff, 2) );
+
+  if (separation < radiusSum) {
+    collidedCallback(player, enemy);
+  }
+};
+
+var onCollision = () => {
+  console.log('collision');
+  // updateBestScore();
+  // gameStats.score = 0;
+  // updateScore();
+};
 
 
 var createEnemies = () => {
@@ -195,7 +217,8 @@ var render = enemyData => {
       .attr('class', 'enemy')
       .attr('href', 'asteroid.png')
       .attr('x', enemy => axes.x(enemy.x))
-      .attr('y', enemy => axes.y(enemy.y));
+      .attr('y', enemy => axes.y(enemy.y))
+      .attr('r', 0);
 
 
   enemies.exit()
@@ -203,33 +226,38 @@ var render = enemyData => {
 
   // console.log(enemies.transition());
   enemies.transition()
+    .duration(200)
+      .attr('r', 10)
+    .transition()
+      .duration(800)
     // todo, make this happen as a named external function
     // .tween('custom', tweenWithoutCollisionDetection.bind(this));
-    .tween('custom', function(endData) {
+      .tween('custom', function(endData) {
 
-      var d3node = d3.select(this);
+        var d3node = d3.select(this);
 
-      var startPos = {
-        x: parseFloat(d3node.attr('x')),
-        y: parseFloat(d3node.attr('y'))
-      };
-
-      var endPos = {
-        x: parseFloat(axes.x(endData.x)),
-        y: parseFloat(axes.y(endData.y))
-      };
-
-      return function(t) {
-
-        var enemyNextPos = {
-          x: startPos.x + (endPos.x - startPos.x) * t,
-          y: startPos.y + (endPos.y - startPos.y) * t
+        var startPos = {
+          x: parseFloat(d3node.attr('x')),
+          y: parseFloat(d3node.attr('y'))
         };
 
-        d3node.attr('x', enemyNextPos.x)
-         .attr('y', enemyNextPos.y);
-      };
-    });
+        var endPos = {
+          x: parseFloat(axes.x(endData.x)),
+          y: parseFloat(axes.y(endData.y))
+        };
+
+        return function(t) {
+          checkCollision(d3node, onCollision);
+
+          var enemyNextPos = {
+            x: startPos.x + (endPos.x - startPos.x) * t,
+            y: startPos.y + (endPos.y - startPos.y) * t
+          };
+
+          d3node.attr('x', enemyNextPos.x)
+           .attr('y', enemyNextPos.y);
+        };
+      });
 };
 
 
