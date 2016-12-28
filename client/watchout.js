@@ -1,16 +1,16 @@
 // start slingin' some d3 here.
 
-// console.log('my fav way to start');
-// var transition = require('../d3-transition');
-
-// var transition = d3.transition();
-
-
 var gameOptions = {
   height: 450,
   width: 700,
   nEnemies: 20,
   padding: 20
+};
+
+var gameStats = {
+  score: 0,
+  bestScore: 0,
+  collisions: 0
 };
 
 var axes = {
@@ -22,6 +22,22 @@ var gameBoard = d3.select('.board').append('svg:svg')
   .attr('width', gameOptions.width)
   .attr('height', gameOptions.height);
 
+var updateScore = () => {
+  d3.select('.current span')
+    .text(gameStats.score.toString());
+};
+
+var updateBestScore = () => {
+  gameStats.bestScore = gameStats.bestScore > gameStats.score
+    ? gameStats.bestScore : gameStats.score;
+
+  d3.select('.highscore span').text(gameStats.bestScore.toString());
+};
+
+var addCollision = () => {
+  gameStats.collisions++;
+  d3.select('.collisions span').text(gameStats.collisions.toString());
+};
 
 ////////////////////////
 //    THE PLAYER
@@ -121,11 +137,8 @@ var Player = () => {
   return instance;
 };
 
-// var players = [];
 var player = Player();
 player.render(gameBoard);
-
-// players.push(player.render(gameBoard));
 
 ////////////////////////
 //    END PLAYER
@@ -147,13 +160,16 @@ var checkCollision = (enemy, collidedCallback) => {
 };
 
 var onCollision = () => {
-  console.log('collision');
-  // updateBestScore();
-  // gameStats.score = 0;
-  // updateScore();
+  // console.log('collision');
+  addCollision();
+  updateBestScore();
+  gameStats.score = 0;
+  updateScore();
 };
 
 
+// creates an array nEnemies long of random positions
+// within the gameboard
 var createEnemies = () => {
   var newEnemyPositions = [];
 
@@ -271,9 +287,16 @@ var gameTurn = () => {
   render(newEnemyPositions);
 };
 
+var increaseScore = () => {
+  gameStats.score++;
+  updateScore();
+};
+
 var play = () => {
   gameTurn();
   setInterval(gameTurn, 1000);
+
+  setInterval(increaseScore, 50);
 };
 
 play();
